@@ -130,6 +130,10 @@ audio properties. Encoded timestamps are rescaled from the encoder time base
 to the muxer's **post-header** stream time base. Extracted audio starts at zero
 and keeps a continuous sample timeline; source timestamp gaps and video sync
 offsets are not retained. Midstream audio-property changes are rejected.
+Decoded-frame and encoder-input PTS are running sample counts in a
+`1/sample_rate` time base. Filter graphs do not inherit a movie container's
+millisecond time base, which cannot precisely represent TrueHD's small frames.
+This avoids backward DTS when planar PCM needs no automatic resampling.
 
 At EOF the program drains decoder → filters/resamplers → encoders → muxer
 trailer, distinguishing EAGAIN/EOF from actual errors. The completed temporary

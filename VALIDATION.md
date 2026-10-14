@@ -4,6 +4,8 @@ Validated on Linux with Rust 1.90.0, ffmpeg-next 8.1.0, and FFmpeg 6.1.1.
 
 - Rust compilation and executable build passed.
 - Six Rust integration tests passed, including exact lossless PCM checks.
+- A planar-PCM TrueHD unit regression test also passed. Before the timestamp
+  fix, this reproducer failed with non-monotonic Matroska DTS (`25 >= 21`).
 - Twenty-five independent FFmpeg/ffprobe media checks passed.
 - Rustfmt checks passed.
 - Clippy checks for all targets passed with warnings denied.
@@ -20,6 +22,7 @@ optional Python integration oracle invokes ffmpeg/ffprobe.
 The sink compatibility fix was additionally compiled and exercised on Linux
 against a locally built FFmpeg 8.0 with ffmpeg-next 9.0.0: all six Rust
 integration tests and all twenty-five independent media checks passed.
+The new planar-PCM timestamp regression also passed with these modern bindings.
 The default package continues to pin ffmpeg-next 8.1.0. macOS was not tested.
 All six Rust integration tests also passed with the pinned 8.1.0 bindings
 against FFmpeg 8.0.

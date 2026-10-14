@@ -10,8 +10,6 @@ use ffmpeg::{
     ChannelLayout,
     Dictionary,
     Packet,
-    Rational,
-    Rescale,
     codec,
     format,
     frame,
@@ -43,7 +41,6 @@ impl Track {
         kind: Codec,
         config: &Config,
         source: &frame::Audio,
-        input_time_base: Rational,
         metadata: &Dictionary<'_>,
         output: &mut format::context::Output,
     ) -> Result<Self> {
@@ -144,7 +141,7 @@ impl Track {
             tags.set("title", &title);
         }
         stream.set_metadata(tags);
-        let filter = AudioFilter::new(source, &encoder, input_time_base)?;
+        let filter = AudioFilter::new(source, &encoder)?;
         Ok(Self {
             encoder,
             filter,
@@ -186,13 +183,18 @@ impl Track {
             let mut frame = frame::Audio::empty();
             match self.filter.receive(&mut frame) {
                 Ok(()) => {
-                    self.samples += frame.samples() as u64;
-                    let filter_time_base = self.filter.time_base()?;
-                    let pts = frame
-                        .pts()
-                        .map(|p| p.rescale(filter_time_base, self.encoder.time_base()));
-                    frame.set_pts(pts);
+                    // Audio extraction intentionally uses a continuous sample
+                    // timeline. Count encoder-rate samples rather than round
+                    // sink PTS from a possibly coarse time base. TrueHD's
+                    // small frames otherwise overlap or move backward.
+                    frame.set_pts(Some(
+                        i64::try_from(self.samples).context("encoder sample timestamp overflow")?,
+                    ));
                     self.encoder.send_frame(&frame).context("sending frame to encoder")?;
+                    self.samples = self
+                        .samples
+                        .checked_add(frame.samples() as u64)
+                        .context("encoded sample counter overflow")?;
                     self.drain_packets(output, false)?;
                 }
                 Err(ffmpeg::Error::Eof) => return Ok(()),
@@ -256,4 +258,51 @@ fn truehd_layout(source: ChannelLayout, policy: LayoutPolicy, codec: &codec::Aud
 
 pub(crate) fn is_again(error: ffmpeg::Error) -> bool {
     matches!(error, ffmpeg::Error::Other { errno } if errno == ffmpeg::error::EAGAIN)
+}
+
+#[cfg(test)]
+mod tests {
+    use ffmpeg::Rescale;
+
+    use super::*;
+
+    #[test]
+    fn truehd_planar_pcm_from_millisecond_timestamps_muxes_without_dts_regression() {
+        ffmpeg::init().unwrap();
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("planar.mka");
+        let mut output = format::output_as(&path, "matroska").unwrap();
+        let config = Config {
+            input: path.clone(),
+            output: None,
+            codec: Codec::Truehd,
+            audio_stream: 0,
+            bitrate_per_channel: 64,
+            layout: LayoutPolicy::Preserve,
+        };
+        let make_frame = || {
+            let mut source = frame::Audio::new(
+                format::Sample::I32(format::sample::Type::Planar),
+                1024,
+                ChannelLayout::STEREO,
+            );
+            source.set_rate(48000);
+            source
+        };
+        let source = make_frame();
+        let mut track = Track::new(Codec::Truehd, &config, &source, &Dictionary::new(), &mut output).unwrap();
+        output.write_header().unwrap();
+        for offset in (0..48 * 1024).step_by(1024) {
+            let mut source = make_frame();
+            for channel in 0..2 {
+                for (i, sample) in source.plane_mut::<i32>(channel).iter_mut().enumerate() {
+                    *sample = (((offset + i) as i32 % 16001) - 8000) << 8;
+                }
+            }
+            source.set_pts(Some((offset as i64).rescale((1, 48000), (1, 1000))));
+            track.push(&source, &mut output).unwrap();
+        }
+        track.finish(&mut output).unwrap();
+        output.write_trailer().unwrap();
+    }
 }

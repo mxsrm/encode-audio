@@ -8,7 +8,6 @@ use anyhow::{
 };
 use ffmpeg_next::{
     Dictionary,
-    Rational,
     codec,
     format,
     media,
@@ -19,7 +18,6 @@ pub(crate) struct Input {
     pub context: format::context::Input,
     pub decoder: codec::decoder::Audio,
     pub stream_index: usize,
-    pub time_base: Rational,
     pub metadata: Dictionary<'static>,
     pub precision: i32,
 }
@@ -47,7 +45,6 @@ impl Input {
             context,
             decoder,
             stream_index,
-            time_base,
             metadata,
             precision,
         })

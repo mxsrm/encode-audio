@@ -10,7 +10,6 @@ use anyhow::{
 use ffmpeg_next::{
     ChannelLayout,
     Packet,
-    Rescale,
     format,
     frame,
 };
@@ -53,7 +52,6 @@ pub struct EncodeReport {
 pub fn encode(config: &Config) -> Result<EncodeReport> {
     let destination = config.validate()?;
     ffmpeg_next::init().context("initializing FFmpeg")?;
-    ffmpeg_next::util::log::set_level(ffmpeg_next::util::log::Level::Error);
     let mut input = Input::open(&config.input, config.audio_stream)?;
     ensure!(
         config.codec == Codec::Opus || input.precision <= 24,
@@ -130,8 +128,11 @@ impl Pipeline {
                         decoded.set_channel_layout(ChannelLayout::default(decoded.channels() as i32));
                     }
                     ensure!(!decoded.channel_layout().is_empty(), "cannot infer source layout");
-                    let rate = decoded.rate() as i32;
-                    decoded.set_pts(Some((self.samples as i64).rescale((1, rate), input.time_base)));
+                    // The filter source uses 1/sample_rate, independent of the
+                    // demuxer's often coarse (e.g. millisecond) time base.
+                    decoded.set_pts(Some(
+                        i64::try_from(self.samples).context("decoded sample timestamp overflow")?,
+                    ));
                     if self.tracks.is_empty() {
                         self.channels = decoded.channels();
                         let kinds: &[Codec] = match config.codec {
@@ -141,14 +142,8 @@ impl Pipeline {
                             Codec::Truehd => &[Codec::Truehd],
                         };
                         for &kind in kinds {
-                            self.tracks.push(Track::new(
-                                kind,
-                                config,
-                                &decoded,
-                                input.time_base,
-                                &input.metadata,
-                                output,
-                            )?);
+                            self.tracks
+                                .push(Track::new(kind, config, &decoded, &input.metadata, output)?);
                         }
                         output.write_header().context("writing container header")?;
                     }

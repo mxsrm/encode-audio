@@ -7,7 +7,6 @@ use anyhow::{
 };
 use ffmpeg_next::{
     ChannelLayout,
-    Rational,
     codec,
     filter,
     frame,
@@ -22,15 +21,11 @@ pub(crate) struct AudioFilter {
 
 impl AudioFilter {
     /// Negotiate conversion from actual decoded properties, not guessed metadata.
-    pub fn new(
-        source: &frame::Audio,
-        encoder: &codec::encoder::audio::Encoder,
-        input_time_base: Rational,
-    ) -> Result<Self> {
+    pub fn new(source: &frame::Audio, encoder: &codec::encoder::audio::Encoder) -> Result<Self> {
         let mut graph = filter::Graph::new();
+        let rate = source.rate();
         let args = format!(
-            "time_base={input_time_base}:sample_rate={}:sample_fmt={}:channel_layout=0x{:x}",
-            source.rate(),
+            "time_base=1/{rate}:sample_rate={rate}:sample_fmt={}:channel_layout=0x{:x}",
             source.format().name(),
             source.channel_layout().bits()
         );
@@ -106,15 +101,6 @@ impl AudioFilter {
             .ok_or(ffmpeg_next::Error::FilterNotFound)?
             .sink()
             .frame(frame)
-    }
-
-    pub fn time_base(&mut self) -> Result<Rational> {
-        Ok(self
-            .graph
-            .get("sink")
-            .context("missing filter sink")?
-            .sink()
-            .time_base())
     }
 
     pub fn finish(&mut self) -> Result<()> {
