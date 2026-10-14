@@ -1,0 +1,19 @@
+[package]
+name = "encode-audio"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+description = "Extract and encode audio tracks through FFmpeg's library API"
+
+[dependencies]
+anyhow = "1.0"
+clap = { version = "4.5", features = ["derive"] }
+ffmpeg-next = { version = "9", default-features = false, features = ["codec", "format", "filter", "software-resampling"] }
+tempfile = "3.20"
+
+[build-dependencies]
+pkg-config = "0.3"
+
+[lints.rust]
+missing_docs = "warn"
+

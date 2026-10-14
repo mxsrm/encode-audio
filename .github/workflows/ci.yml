@@ -1,0 +1,24 @@
+name: Rust and media checks
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Install FFmpeg development libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg pkg-config clang libclang-dev \
+            libavcodec-dev libavformat-dev libavfilter-dev libavutil-dev \
+            libswresample-dev libswscale-dev libpostproc-dev
+      - run: cargo fmt --check
+      - run: cargo clippy --all-targets --locked -- -D warnings
+      - run: cargo test --locked
+      - run: cargo doc --no-deps --locked
+        env:
+          RUSTDOCFLAGS: -D warnings
+      - run: cargo build --locked
+      - run: python3 tests/verify_media.py target/debug/encode-audio
