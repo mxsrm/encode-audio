@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["encode"],"mod":["cli","config"],"struct":["EncodeReport"]};
