@@ -1,0 +1,6 @@
+sign-commit = true
+sign-tag = true
+push = false
+publish = false
+release = false
+allow-branch = ["main"]

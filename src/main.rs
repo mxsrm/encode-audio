@@ -3,11 +3,7 @@
 use std::process::ExitCode;
 
 use clap::Parser;
-use encode_audio::{
-    Config,
-    cli::Cli,
-    encode,
-};
+use encode_audio::{Config, cli::Cli, encode};
 
 fn main() -> ExitCode {
     let config = Config::from(Cli::parse());

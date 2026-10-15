@@ -2,16 +2,9 @@
 
 use std::path::PathBuf;
 
-use clap::{
-    Parser,
-    ValueEnum,
-};
+use clap::{Parser, ValueEnum};
 
-use crate::config::{
-    Codec,
-    Config,
-    LayoutPolicy,
-};
+use crate::config::{Codec, Config, LayoutPolicy};
 
 /// Extract one audio track and encode it using FFmpeg libraries directly.
 #[derive(Debug, Parser)]

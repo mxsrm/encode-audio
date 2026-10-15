@@ -15,12 +15,5 @@ mod output;
 mod pipeline;
 mod track;
 
-pub use config::{
-    Codec,
-    Config,
-    LayoutPolicy,
-};
-pub use pipeline::{
-    EncodeReport,
-    encode,
-};
+pub use config::{Codec, Config, LayoutPolicy};
+pub use pipeline::{EncodeReport, encode};

@@ -1,15 +1,8 @@
 //! Validated encoding choices and deterministic output naming.
 
-use std::path::{
-    Path,
-    PathBuf,
-};
+use std::path::{Path, PathBuf};
 
-use anyhow::{
-    Context,
-    Result,
-    ensure,
-};
+use anyhow::{Context, Result, ensure};
 use clap::ValueEnum;
 use ffmpeg_next::ChannelLayout;
 

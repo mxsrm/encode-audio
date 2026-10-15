@@ -3,25 +3,11 @@
 
 use std::{
     fs,
-    path::{
-        Path,
-        PathBuf,
-    },
+    path::{Path, PathBuf},
 };
 
-use encode_audio::{
-    Codec,
-    Config,
-    LayoutPolicy,
-    encode,
-};
-use ffmpeg_next::{
-    Packet,
-    codec,
-    format,
-    frame,
-    media,
-};
+use encode_audio::{Codec, Config, LayoutPolicy, encode};
+use ffmpeg_next::{Packet, codec, format, frame, media};
 
 fn wav(path: &Path, channels: u16, samples: usize, rate: u32) -> Vec<i16> {
     let pcm: Vec<i16> = (0..samples)

@@ -1,28 +1,11 @@
 //! One output track: encoder configuration, conversion, and packet muxing.
 
-use anyhow::{
-    Context,
-    Result,
-    bail,
-    ensure,
-};
-use ffmpeg::{
-    ChannelLayout,
-    Dictionary,
-    Packet,
-    codec,
-    format,
-    frame,
-};
+use anyhow::{Context, Result, bail, ensure};
+use ffmpeg::{ChannelLayout, Dictionary, Packet, codec, format, frame};
 use ffmpeg_next as ffmpeg;
 
 use crate::{
-    config::{
-        Codec,
-        Config,
-        LayoutPolicy,
-        output_layout,
-    },
+    config::{Codec, Config, LayoutPolicy, output_layout},
     filters::AudioFilter,
 };
 

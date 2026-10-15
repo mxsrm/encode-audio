@@ -2,16 +2,8 @@
 
 use std::path::Path;
 
-use anyhow::{
-    Context,
-    Result,
-};
-use ffmpeg_next::{
-    Dictionary,
-    codec,
-    format,
-    media,
-};
+use anyhow::{Context, Result};
+use ffmpeg_next::{Dictionary, codec, format, media};
 
 /// Owns the demuxer and the decoder for the selected track.
 pub(crate) struct Input {

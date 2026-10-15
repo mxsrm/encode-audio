@@ -2,27 +2,15 @@
 
 use std::path::PathBuf;
 
-use anyhow::{
-    Context,
-    Result,
-    ensure,
-};
-use ffmpeg_next::{
-    ChannelLayout,
-    Packet,
-    format,
-    frame,
-};
+use anyhow::{Context, Result, ensure};
+use ffmpeg_next::{ChannelLayout, Packet, format, frame};
 
 use crate::{
     Codec,
     Config,
     input::Input,
     output::OutputFile,
-    track::{
-        Track,
-        is_again,
-    },
+    track::{Track, is_again},
 };
 
 /// Summary returned only after the completed output has been published.

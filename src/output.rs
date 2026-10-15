@@ -1,14 +1,8 @@
 //! Transactional output: mux into a private temporary file, then publish.
 
-use std::path::{
-    Path,
-    PathBuf,
-};
+use std::path::{Path, PathBuf};
 
-use anyhow::{
-    Context,
-    Result,
-};
+use anyhow::{Context, Result};
 use tempfile::NamedTempFile;
 
 use crate::config::parent;

@@ -1,10 +1,6 @@
 //! Muxer adapter for payload and side-data-only packets.
 
-use ffmpeg_next::{
-    Packet,
-    format,
-    packet::Mut,
-};
+use ffmpeg_next::{Packet, format, packet::Mut};
 
 /// FFmpeg's FLAC encoder emits a final packet containing updated STREAMINFO
 /// (including the MD5 and sample count) but no audio payload. The high-level

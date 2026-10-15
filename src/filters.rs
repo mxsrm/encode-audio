@@ -1,16 +1,7 @@
 //! Per-encoder conversion of sample formats, rates, layouts, and frame sizes.
 
-use anyhow::{
-    Context,
-    Result,
-    ensure,
-};
-use ffmpeg_next::{
-    ChannelLayout,
-    codec,
-    filter,
-    frame,
-};
+use anyhow::{Context, Result, ensure};
+use ffmpeg_next::{ChannelLayout, codec, filter, frame};
 
 pub(crate) struct AudioFilter {
     graph: filter::Graph,
